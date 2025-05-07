@@ -141,9 +141,15 @@ display(spark.sql(sqlStatement))
 
 # DBTITLE 1,Retrieve the table details
 # Scroll the output to verify the storage location of the table
-sqlStatement = "DESCRIBE EXTENDED main." + databaseForDLT + ".churn_features"
+sqlStatement = "DESCRIBE TABLE main." + databaseForDLT + ".churn_features"
 print("Executing:\n" + sqlStatement)
 display(spark.sql(sqlStatement))
+
+# Create a serverless cluster and run the following command:
+# sqlStatement = "DESCRIBE TABLE EXTENDED main." + databaseForDLT + ".churn_features"
+# print("Executing:\n" + sqlStatement)
+# display(spark.sql(sqlStatement))
+
 
 # COMMAND ----------
 
