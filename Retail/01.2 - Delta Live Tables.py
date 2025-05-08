@@ -153,33 +153,6 @@ display(spark.sql(sqlStatement))
 
 # COMMAND ----------
 
-# DBTITLE 1,Retrieve the table history
-sqlStatement = "DESCRIBE HISTORY main." + databaseForDLT + ".churn_features"
-print("Executing:\n" + sqlStatement)
-display(spark.sql(sqlStatement))
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Rerun the DLT pipeline
-# MAGIC As not new data are uploaded on the blob storage, there will be only a recalculation of the last table
-
-# COMMAND ----------
-
-# DBTITLE 1,Count the rows in the churn_features table again. It should be the same number
-sqlStatement = "select count(*) from main." + databaseForDLT + ".churn_features"
-print("Executing:\n" + sqlStatement)
-display(spark.sql(sqlStatement))
-
-# COMMAND ----------
-
-# DBTITLE 1,Retrieve the table history. There is an additional entry now
-sqlStatement = "DESCRIBE HISTORY main." + databaseForDLT + ".churn_features"
-print("Executing:\n" + sqlStatement)
-display(spark.sql(sqlStatement))
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC ### Next up
 # MAGIC [Build and train a Machine Learning model]($./02 - Machine Learning with MLflow)
