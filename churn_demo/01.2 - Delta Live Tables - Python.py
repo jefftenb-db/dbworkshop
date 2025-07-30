@@ -4,7 +4,7 @@ import dlt
 from pyspark.sql import functions as F
 
 # The path to the blob storage with the raw data
-rawDataDirectory = "/Volumes/main/odl_user_XXX_databrickslabs_com_retail/retail"
+rawDataDirectory = spark.conf.get("data_source_path") # set configuration in DLT pipeline advanced setting
 eventsRawDataDir = rawDataDirectory + "/events"
 ordersRawDataDir = rawDataDirectory + "/orders"
 usersRawDataDir = rawDataDirectory + "/users"

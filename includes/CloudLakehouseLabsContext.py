@@ -7,8 +7,10 @@ import re
 class CloudLakehouseLabsContext:
   def __init__(self, useCase: str):
     self.__useCase = useCase
-    self.__cloud = spark.conf.get("spark.databricks.clusterUsageTags.cloudProvider").lower()
-    self.__user = dbutils.notebook.entry_point.getDbutils().notebook().getContext().tags().apply('user')
+    #self.__cloud = spark.conf.get("spark.databricks.clusterUsageTags.cloudProvider").lower()
+    self.__cloud = 'aws'
+    #self.__user = dbutils.notebook.entry_point.getDbutils().notebook().getContext().tags().apply('user')
+    self.__user = dbutils.notebook.entry_point.getDbutils().notebook().getContext().userName().get()
     text = self.__user
     try: text = unicode(text, 'utf-8')
     except (TypeError, NameError): pass

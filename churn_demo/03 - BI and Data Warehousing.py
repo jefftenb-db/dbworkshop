@@ -70,14 +70,16 @@
 # MAGIC
 # MAGIC While this is ideal for Data Analyst to start analysing our customer Churn, other personas can also leverage DBSQL to track our data ingestion pipeline, the data quality, model behavior etc.
 # MAGIC
-# MAGIC Open the [Queries menu](/sql/queries) to start writting your first analysis.
+# MAGIC
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC ### Lab exercise
 # MAGIC
-# MAGIC Create the following sql queries and visualisations using the above catalog and schema
+# MAGIC Create a [Dashboard](/sql/dashboards) and then add the following sql queries (use the above catalog/schema) as datasets in the Data tab.
+# MAGIC
+# MAGIC <img style="float: right; margin-left: 10px" width="600px" src="./includes/images/dashboard.png" />
 # MAGIC
 # MAGIC **1. Total MRR**
 # MAGIC ```
@@ -157,16 +159,12 @@
 # MAGIC
 # MAGIC ## Creating our Churn Dashboard
 # MAGIC
-# MAGIC <img style="float: right; margin-left: 10px" width="600px" src="https://raw.githubusercontent.com/QuentinAmbard/databricks-demo/main/retail/resources/images/lakehouse-retail/lakehouse-retail-churn-dbsql-dashboard.png" />
+# MAGIC <img style="float: right; margin-left: 10px" width="600px" src="./includes/images/dashboard_viz.png" />
 # MAGIC
-# MAGIC The next step is now to assemble our queries and their visualization in a comprehensive SQL dashboard that our business will be able to track.
+# MAGIC The next step is to add visualizations in the dashboard that our business will be able to track.
 # MAGIC
 # MAGIC ### Lab exercise
 # MAGIC Assemple the visualisations defined with the above queries into a dashboard
-
-# COMMAND ----------
-
-
 
 # COMMAND ----------
 

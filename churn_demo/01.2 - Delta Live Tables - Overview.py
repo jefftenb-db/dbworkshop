@@ -120,13 +120,6 @@
 
 # COMMAND ----------
 
-# DBTITLE 1,Parameters for the DLT job
-# Create the tables in a database in the hive metastore with data on dbfs
-print("Specify the following database/schema when defining the DLT pipeline:\n" + databaseForDLT + "\n")
-print("Specify the following storage location for the DLT pipeline tables:\n" + dltPipelinesOutputDataDirectory + "\n")
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC ## Run the following after having set up and run the DLT job
 
