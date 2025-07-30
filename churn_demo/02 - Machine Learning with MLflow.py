@@ -120,28 +120,6 @@ g.map_upper(sns.regplot)
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC ### Further data analysis and preparation using pandas API
-# MAGIC
-# MAGIC Because our Data Scientist team is familiar with Pandas, we'll use `pandas on spark` to scale `pandas` code. The Pandas instructions will be converted in the spark engine under the hood and distributed at scale.
-# MAGIC
-# MAGIC Typicaly a Data Science project would involve more a advanced preparation and likely require extra data prep steps, including more a complex feature preparation.
-
-# COMMAND ----------
-
-# DBTITLE 1,Custom pandas transformation / code on top of your entire dataset
-# Convert to pandas on spark
-dataset = churn_dataset.pandas_api()
-dataset.describe()  
-# Drop columns we don't want to use in our model
-dataset = dataset.drop(columns=['address', 'email', 'firstname', 'lastname', 'creation_date', 'last_activity_date', 'last_event'])
-# Drop missing values
-dataset = dataset.dropna()
-# print the ten first rows
-dataset[:10]
-
-# COMMAND ----------
-
 # MAGIC %md-sandbox
 # MAGIC
 # MAGIC ## Write to Feature Store
@@ -172,14 +150,16 @@ except:
 churn_feature_table = fs.create_table(
   name='churn_user_features',
   primary_keys='user_id',
-  schema=dataset.spark.schema(),
+  #schema=dataset.spark.schema(),
+  schema=churn_dataset.schema,
   description='These features are derived from the churn_bronze_customers table in the lakehouse. We created dummy variables for the categorical columns, cleaned up their names, and added a boolean flag for whether the customer churned or not. No aggregations were performed.'
 )
 
 # Remove duplicate rows based on user_id
-unique_dataset = dataset.drop_duplicates(['user_id'])
+#unique_dataset = dataset.drop_duplicates(['user_id'])
+unique_dataset = churn_dataset.drop_duplicates(['user_id'])
 
-fs.write_table(df=unique_dataset.to_spark(), name='churn_user_features', mode='overwrite')
+fs.write_table(df=unique_dataset, name='churn_user_features', mode='overwrite')
 features = fs.read_table('churn_user_features')
 display(features)
 

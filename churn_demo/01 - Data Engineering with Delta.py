@@ -65,7 +65,7 @@ display(dbutils.fs.ls(rawDataVolume+"/orders"))
 
 # COMMAND ----------
 
-display(spark.sql("SELECT * FROM json.`"+rawDataVolume+"/users`"))
+display(spark.sql("SELECT * FROM json.`"+rawDataVolume+"/users/`"))
 
 # COMMAND ----------
 

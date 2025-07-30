@@ -70,12 +70,12 @@ predictions.createOrReplaceTempView("v_churn_prediction")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC create or replace table churn_prediction as select * from v_churn_prediction
+# MAGIC select * from v_churn_prediction limit 10
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC select * from churn_prediction
+# MAGIC create or replace table churn_prediction as select * from v_churn_prediction
 
 # COMMAND ----------
 
