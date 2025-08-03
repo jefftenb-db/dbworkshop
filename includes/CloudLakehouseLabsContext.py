@@ -23,7 +23,7 @@ class CloudLakehouseLabsContext:
     catalogName = None
     databaseName = self.__user_id + '_' + self.__useCase
     volumeName = self.__volumeName
-    #for catalog in ['cloud_lakehouse_labs', 'main', 'dbdemos', 'hive_metastore']:
+    #for catalog in ['cloud_lakehouse_labs', 'main', 'workspace', 'dbdemos', 'hive_metastore']:
     for catalog in ['cloud_lakehouse_labs', 'main', 'dbdemos']:
       try:
         catalogName = catalog
