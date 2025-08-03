@@ -9,7 +9,6 @@ class CloudLakehouseLabsContext:
     self.__useCase = useCase
     #self.__cloud = spark.conf.get("spark.databricks.clusterUsageTags.cloudProvider").lower()
     self.__cloud = 'aws'
-    #self.__user = dbutils.notebook.entry_point.getDbutils().notebook().getContext().tags().apply('user')
     self.__user = dbutils.notebook.entry_point.getDbutils().notebook().getContext().userName().get()
     text = self.__user
     try: text = unicode(text, 'utf-8')
@@ -23,8 +22,7 @@ class CloudLakehouseLabsContext:
     catalogName = None
     databaseName = self.__user_id + '_' + self.__useCase
     volumeName = self.__volumeName
-    #for catalog in ['cloud_lakehouse_labs', 'main', 'workspace', 'dbdemos', 'hive_metastore']:
-    for catalog in ['cloud_lakehouse_labs', 'main', 'dbdemos']:
+    for catalog in ['cloud_lakehouse_labs', 'main', 'workspace', 'dbdemos']:
       try:
         catalogName = catalog
         if catalogName != 'hive_metastore':
@@ -45,9 +43,6 @@ class CloudLakehouseLabsContext:
       spark.sql('use catalog ' + self.__catalog)
     # Create the working directory under UC volume
     self.__workingDirectory = '/Volumes/' + catalog + '/' + databaseName + '/home_' + self.__useCase
-    # Create the working directory under DBFS
-    #self.__workingDirectory = '/Users/' + self.__user_id + '/' + self.__useCase
-    #dbutils.fs.mkdirs(self.__workingDirectory)
 
   def cloud(self): return self.__cloud
 
