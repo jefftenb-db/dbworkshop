@@ -75,6 +75,12 @@
 
 # COMMAND ----------
 
+# MAGIC %pip install --quiet databricks-feature-engineering databricks-automl-runtime holidays scikit-learn==1.0.2 category_encoders
+# MAGIC
+# MAGIC %restart_python
+
+# COMMAND ----------
+
 # MAGIC %run ./includes/SetupLab
 
 # COMMAND ----------
@@ -86,14 +92,14 @@
 
 # COMMAND ----------
 
-spark.sql("use catalog main")
-spark.sql("use database "+databaseName)
-
+spark.sql("use catalog " + catalogName)
+spark.sql("use database " + databaseName)
 
 # COMMAND ----------
 
+print("Catalog name:  " + catalogName)
 print("Database name: " + databaseName)
-print("User name: " + userName)
+print("User name:     " + userName)
 
 # COMMAND ----------
 
@@ -136,9 +142,11 @@ g.map_upper(sns.regplot)
 
 # COMMAND ----------
 
-from databricks.feature_store import FeatureStoreClient
+#from databricks.feature_store import FeatureStoreClient
 
-fs = FeatureStoreClient()
+from databricks.feature_engineering import FeatureEngineeringClient, FeatureLookup
+
+fs = FeatureEngineeringClient()
 
 try:
   # Drop table if exists
@@ -156,11 +164,12 @@ churn_feature_table = fs.create_table(
 )
 
 # Remove duplicate rows based on user_id
-#unique_dataset = dataset.drop_duplicates(['user_id'])
 unique_dataset = churn_dataset.drop_duplicates(['user_id'])
 
-fs.write_table(df=unique_dataset, name='churn_user_features', mode='overwrite')
-features = fs.read_table('churn_user_features')
+# fs.write_table(df=unique_dataset, name='churn_user_features', mode='overwrite')
+fs.write_table(df=unique_dataset, name='churn_user_features', mode='merge')
+
+features = fs.read_table(name='churn_user_features')
 display(features)
 
 # COMMAND ----------
@@ -355,17 +364,8 @@ while True:
   if model_version_details.status == 'READY': break
   time.sleep(5)
 
-#print(model_version_details)
-
 # create "Champion" alias for version 1 of model "prod.ml_team.iris_model"
 client.set_registered_model_alias('main.'+databaseName+'.'+modelName, "production", 1)
-
-#client.transition_model_version_stage(
-#    name=model_version_details.name,
-#    version=model_version_details.version,
-#    stage="Production",
-#    archive_existing_versions = True
-#)
 
 # COMMAND ----------
 
@@ -404,11 +404,11 @@ client.set_registered_model_alias('main.'+databaseName+'.'+modelName, "productio
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # Lab exercise - AutoML
+# MAGIC # Optional Lab exercise - AutoML
 # MAGIC
-# MAGIC Let's create a better model with just a few clicks!
+# MAGIC Create a better model with just a few clicks!
 # MAGIC * Create an AutoML experiment
-# MAGIC * register the best run with the model named as above.
+# MAGIC * register the best run with the **same** model named as above.
 # MAGIC * Promote the new version to **Production**
 
 # COMMAND ----------

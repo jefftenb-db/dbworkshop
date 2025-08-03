@@ -53,13 +53,13 @@
 
 # COMMAND ----------
 
-# DBTITLE 1,The raw data on DBFS
+# DBTITLE 1,The raw data in volumes
 ordersFolder = rawDataVolume + '/orders'
 usersFolder = rawDataVolume + '/users'
 eventsFolder = rawDataVolume + '/events'
-print('Order raw data stored under the DBFS folder "' + ordersFolder + '"')
-print('User raw data stored under the DBFS folder "' + usersFolder + '"')
-print('Website event raw data stored under the DBFS folder "' + eventsFolder + '"')
+print('Order raw data stored under the folder "' + ordersFolder + '"')
+print('User raw data stored under the folder "' + usersFolder + '"')
+print('Website event raw data stored under the folder "' + eventsFolder + '"')
 
 # COMMAND ----------
 

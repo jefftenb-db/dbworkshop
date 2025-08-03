@@ -39,43 +39,64 @@
 
 # COMMAND ----------
 
+# MAGIC %pip install --quiet databricks-feature-engineering databricks-automl-runtime holidays scikit-learn==1.0.2 category_encoders
+# MAGIC
+# MAGIC %restart_python
+
+# COMMAND ----------
+
 # MAGIC %run ./includes/SetupLab
 
 # COMMAND ----------
 
-spark.sql("use catalog main")
-spark.sql("use database "+databaseName)
+spark.sql("use catalog " + catalogName)
+spark.sql("use database " + databaseName)
 
 # COMMAND ----------
 
-# DBTITLE 1,Loading the model
+print("Catalog name:  " + catalogName)
+print("Database name: " + databaseName)
+print("User name:     " + userName)
+print("Model name:    " + modelName)
+
+# COMMAND ----------
+
+# DBTITLE 1,Retrieve Model
+from mlflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
+
+requirements_path = ModelsArtifactRepository(f"models:/{catalogName}.{databaseName}.{modelName}@production").download_artifacts(artifact_path="requirements.txt") # download model from remote registry
+
+# COMMAND ----------
+
+# DBTITLE 1,Install model libraries
+# MAGIC %pip install --quiet -r $requirements_path
+# MAGIC dbutils.library.restartPython()
+
+# COMMAND ----------
+
+# MAGIC %run ./includes/SetupLab
+
+# COMMAND ----------
+
+spark.sql("use catalog " + catalogName)
+spark.sql("use database " + databaseName)
+
+# COMMAND ----------
+
 import mlflow
-#                                      Stage/version
-#                       Model name          |              output
-#                           |               |                 |
-mlflow.set_registry_uri('databricks-uc')
-modelURL = "models:/" + 'main.'+databaseName+'.'+modelName + "@production"    #        |
-print("Retrieving model " + modelURL)                #        |
-predict_churn_udf = mlflow.pyfunc.spark_udf(spark, modelURL, "int")
-#We can use the function in SQL
-spark.udf.register("predict_churn", predict_churn_udf)
+
+production_model = mlflow.pyfunc.spark_udf(spark, model_uri=f"models:/{catalogName}.{databaseName}.{modelName}@production")
 
 # COMMAND ----------
 
-# DBTITLE 1,Creating the final table
-model_features = predict_churn_udf.metadata.get_input_schema().input_names()
-predictions = spark.table('churn_features').withColumn('churn_prediction', predict_churn_udf(*model_features))
-predictions.createOrReplaceTempView("v_churn_prediction")
+inference_df = spark.read.table(f"churn_features")
+
+preds_df = inference_df.withColumn('churn_prediction', production_model(*production_model.metadata.get_input_schema().input_names()))
+display(preds_df)
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC select * from v_churn_prediction limit 10
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC create or replace table churn_prediction as select * from v_churn_prediction
+preds_df.write.mode("overwrite").saveAsTable("v_churn_prediction")
 
 # COMMAND ----------
 

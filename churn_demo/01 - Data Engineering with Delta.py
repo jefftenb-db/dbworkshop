@@ -82,6 +82,7 @@ display(spark.sql("SELECT * FROM json.`"+rawDataVolume+"/users/`"))
 
 # COMMAND ----------
 
+print("Catalog name: " + catalogName)
 print("Database name: " + databaseName)
 print("User name: " + userName)
 

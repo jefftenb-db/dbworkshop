@@ -125,8 +125,8 @@ COMMENT "User data cleaned and anonymized for analysis."
 AS SELECT
   id as user_id,
   sha1(email) as email, 
-  to_timestamp(creation_date, "MM-dd-yyyy HH:mm:ss") as creation_date, 
-  to_timestamp(last_activity_date, "MM-dd-yyyy HH:mm:ss") as last_activity_date, 
+  to_timestamp(creation_date) as creation_date, 
+  to_timestamp(last_activity_date) as last_activity_date, 
   initcap(firstname) as firstname, 
   initcap(lastname) as lastname, 
   address, 

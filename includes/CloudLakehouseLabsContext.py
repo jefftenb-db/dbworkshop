@@ -23,13 +23,15 @@ class CloudLakehouseLabsContext:
     catalogName = None
     databaseName = self.__user_id + '_' + self.__useCase
     volumeName = self.__volumeName
-    for catalog in ['cloud_lakehouse_labs', 'main', 'dbdemos', 'hive_metastore']:
+    #for catalog in ['cloud_lakehouse_labs', 'main', 'dbdemos', 'hive_metastore']:
+    for catalog in ['cloud_lakehouse_labs', 'main', 'dbdemos']:
       try:
         catalogName = catalog
         if catalogName != 'hive_metastore':
           self.__catalog = catalogName
           spark.sql("create database if not exists " + catalog + "." + databaseName)
-          spark.sql("CREATE VOLUME " + catalog + "." + databaseName + "." + volumeName)
+          spark.sql("CREATE VOLUME IF NOT EXISTS " + catalog + "." + databaseName + "." + volumeName)
+          spark.sql("CREATE VOLUME IF NOT EXISTS " + catalog + "." + databaseName + ".home")
         else: 
           self.__catalog = catalogName
           spark.sql("create database if not exists " + databaseName)
@@ -38,12 +40,14 @@ class CloudLakehouseLabsContext:
         pass
     if catalogName is None: raise Exception("No catalog found with CREATE SCHEMA privileges for user '" + self.__user + "'")
     self.__schema = databaseName
-    if catalogName != 'hive_metastore': spark.sql('use catalog ' + self.__catalog)
     spark.sql('use database ' + self.__schema)
-
+    if catalogName != 'hive_metastore':
+      spark.sql('use catalog ' + self.__catalog)
+    # Create the working directory under UC volume
+    self.__workingDirectory = '/Volumes/' + catalog + '/' + databaseName + '/home_' + self.__useCase
     # Create the working directory under DBFS
-    self.__workingDirectory = '/Users/' + self.__user_id + '/' + self.__useCase
-    dbutils.fs.mkdirs(self.__workingDirectory)
+    #self.__workingDirectory = '/Users/' + self.__user_id + '/' + self.__useCase
+    #dbutils.fs.mkdirs(self.__workingDirectory)
 
   def cloud(self): return self.__cloud
 
