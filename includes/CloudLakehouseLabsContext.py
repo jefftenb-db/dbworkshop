@@ -42,7 +42,7 @@ class CloudLakehouseLabsContext:
     if catalogName != 'hive_metastore':
       spark.sql('use catalog ' + self.__catalog)
     # Create the working directory under UC volume
-    self.__workingDirectory = '/Volumes/' + catalog + '/' + databaseName + '/home_' + self.__useCase
+    self.__workingDirectory = '/Volumes/' + catalogName + '/' + databaseName + '/home_' + self.__useCase
 
   def cloud(self): return self.__cloud
 
@@ -58,7 +58,7 @@ class CloudLakehouseLabsContext:
 
   def workingDirectory(self): return self.__workingDirectory
 
-  def workingVolumeDirectory(self): return "/Volumes/main/"+self.__schema+"/"+self.__volumeName
+  def workingVolumeDirectory(self): return "/Volumes/" + catalogName + "/"+self.__schema+"/"+self.__volumeName
 
   def useCase(self): return self.__useCase
 
