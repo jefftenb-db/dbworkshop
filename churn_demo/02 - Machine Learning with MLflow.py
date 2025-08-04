@@ -142,8 +142,6 @@ g.map_upper(sns.regplot)
 
 # COMMAND ----------
 
-#from databricks.feature_store import FeatureStoreClient
-
 from databricks.feature_engineering import FeatureEngineeringClient, FeatureLookup
 
 fs = FeatureEngineeringClient()
@@ -250,10 +248,6 @@ preprocessor = ColumnTransformer(transformers, remainder="passthrough", sparse_t
 
 # COMMAND ----------
 
-test_df.dtypes
-
-# COMMAND ----------
-
 # Separate target column from features
 target_col = "churn"
 X_train = train_df.drop([target_col], axis=1)
@@ -336,9 +330,7 @@ with mlflow.start_run(run_name="simple-RF-run") as run:
 # MAGIC * **Model Stage Transitions:** Record new registration events or changes as activities that automatically log users, changes, and additional metadata such as comments.
 # MAGIC * **CI/CD Workflow Integration:** Record stage transitions, request, review and approve changes as part of CI/CD pipelines for better control and governance.
 # MAGIC
-# MAGIC <div><img src="https://files.training.databricks.com/images/eLearning/ML-Part-4/model-registry.png" style="height: 400px; margin: 20px"/></div>
-# MAGIC
-# MAGIC <img src="https://files.training.databricks.com/images/icon_note_24.png"/> See <a href="https://mlflow.org/docs/latest/registry.html" target="_blank">the MLflow docs</a> for more details on the model registry.
+# MAGIC See <a href="https://mlflow.org/docs/latest/registry.html" target="_blank">the MLflow docs</a> for more details on the model registry.
 
 # COMMAND ----------
 
@@ -364,7 +356,7 @@ while True:
   if model_version_details.status == 'READY': break
   time.sleep(5)
 
-# create "Champion" alias for version 1 of model "prod.ml_team.iris_model"
+# create "production" alias for version 1 of model "prod.ml_team.iris_model"
 client.set_registered_model_alias('main.'+databaseName+'.'+modelName, "production", 1)
 
 # COMMAND ----------

@@ -6,7 +6,6 @@ import re
 
 class CloudLakehouseLabsContext:
   def __init__(self, useCase: str, catalog: str):
-    print(catalog)
     self.__useCase = useCase
     #self.__cloud = spark.conf.get("spark.databricks.clusterUsageTags.cloudProvider").lower()
     self.__cloud = 'aws'

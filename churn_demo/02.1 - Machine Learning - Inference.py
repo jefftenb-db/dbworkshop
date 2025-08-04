@@ -39,21 +39,25 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Install necessary libraries
 # MAGIC %pip install --quiet databricks-feature-engineering databricks-automl-runtime holidays scikit-learn==1.0.2 category_encoders
 # MAGIC
 # MAGIC %restart_python
 
 # COMMAND ----------
 
+# DBTITLE 1,Run setup
 # MAGIC %run ./includes/SetupLab $CATALOG="main"
 
 # COMMAND ----------
 
+# DBTITLE 1,Use commands for catalog and db
 spark.sql("use catalog " + catalogName)
 spark.sql("use database " + databaseName)
 
 # COMMAND ----------
 
+# DBTITLE 1,Verify values
 print("Catalog name:  " + catalogName)
 print("Database name: " + databaseName)
 print("User name:     " + userName)
@@ -61,7 +65,7 @@ print("Model name:    " + modelName)
 
 # COMMAND ----------
 
-# DBTITLE 1,Retrieve Model
+# DBTITLE 1,Download our ML model from UC registry
 from mlflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
 
 requirements_path = ModelsArtifactRepository(f"models:/{catalogName}.{databaseName}.{modelName}@production").download_artifacts(artifact_path="requirements.txt") # download model from remote registry
@@ -74,21 +78,25 @@ requirements_path = ModelsArtifactRepository(f"models:/{catalogName}.{databaseNa
 
 # COMMAND ----------
 
+# DBTITLE 1,Re-setup (previous command cleared everything)
 # MAGIC %run ./includes/SetupLab
 
 # COMMAND ----------
 
+# DBTITLE 1,Use commands for catalog and db
 spark.sql("use catalog " + catalogName)
 spark.sql("use database " + databaseName)
 
 # COMMAND ----------
 
+# DBTITLE 1,Register ML model as UDF
 import mlflow
 
 production_model = mlflow.pyfunc.spark_udf(spark, model_uri=f"models:/{catalogName}.{databaseName}.{modelName}@production")
 
 # COMMAND ----------
 
+# DBTITLE 1,Create prediction column
 inference_df = spark.read.table(f"churn_features")
 
 preds_df = inference_df.withColumn('churn_prediction', production_model(*production_model.metadata.get_input_schema().input_names()))
@@ -96,6 +104,7 @@ display(preds_df)
 
 # COMMAND ----------
 
+# DBTITLE 1,Save as a new table
 preds_df.write.mode("overwrite").saveAsTable("v_churn_prediction")
 
 # COMMAND ----------
