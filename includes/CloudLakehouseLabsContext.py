@@ -5,7 +5,8 @@ import unicodedata
 import re
 
 class CloudLakehouseLabsContext:
-  def __init__(self, useCase: str):
+  def __init__(self, useCase: str, catalog: str):
+    print(catalog)
     self.__useCase = useCase
     #self.__cloud = spark.conf.get("spark.databricks.clusterUsageTags.cloudProvider").lower()
     self.__cloud = 'aws'
@@ -17,30 +18,23 @@ class CloudLakehouseLabsContext:
     text = text.encode('ascii', 'ignore').decode("utf-8").lower()
     self.__user_id = re.sub("[^a-zA-Z0-9]", "_", text)
     self.__volumeName = useCase
+    self.__catalog = catalog
 
     # Create the working schema
-    catalogName = None
+    catalogName = self.__catalog
     databaseName = self.__user_id + '_' + self.__useCase
     volumeName = self.__volumeName
-    for catalog in ['cloud_lakehouse_labs', 'main', 'workspace', 'dbdemos']:
-      try:
-        catalogName = catalog
-        if catalogName != 'hive_metastore':
-          self.__catalog = catalogName
-          spark.sql("create database if not exists " + catalog + "." + databaseName)
-          spark.sql("CREATE VOLUME IF NOT EXISTS " + catalog + "." + databaseName + "." + volumeName)
-          spark.sql("CREATE VOLUME IF NOT EXISTS " + catalog + "." + databaseName + ".home")
-        else: 
-          self.__catalog = catalogName
-          spark.sql("create database if not exists " + databaseName)
-        break
-      except Exception as e:
-        pass
+    try:
+      spark.sql("create database if not exists " + catalogName + "." + databaseName)
+      spark.sql("CREATE VOLUME IF NOT EXISTS " + catalogName + "." + databaseName + "." + volumeName)
+      spark.sql("CREATE VOLUME IF NOT EXISTS " + catalogName + "." + databaseName + ".home")
+    except Exception as e:
+      pass
     if catalogName is None: raise Exception("No catalog found with CREATE SCHEMA privileges for user '" + self.__user + "'")
     self.__schema = databaseName
     spark.sql('use database ' + self.__schema)
-    if catalogName != 'hive_metastore':
-      spark.sql('use catalog ' + self.__catalog)
+    spark.sql('use catalog ' + self.__catalog)
+
     # Create the working directory under UC volume
     self.__workingDirectory = '/Volumes/' + catalogName + '/' + databaseName + '/home_' + self.__useCase
 
@@ -58,7 +52,7 @@ class CloudLakehouseLabsContext:
 
   def workingDirectory(self): return self.__workingDirectory
 
-  def workingVolumeDirectory(self): return "/Volumes/" + catalogName + "/"+self.__schema+"/"+self.__volumeName
+  def workingVolumeDirectory(self): return "/Volumes/" + self.__catalog + "/"+self.__schema+"/"+self.__volumeName
 
   def useCase(self): return self.__useCase
 

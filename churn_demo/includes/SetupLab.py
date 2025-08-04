@@ -1,11 +1,15 @@
 # Databricks notebook source
+dbutils.widgets.text("CATALOG", "main")
+
+# COMMAND ----------
+
 # MAGIC %run ../../includes/CloudLakehouseLabsContext
 
 # COMMAND ----------
 
 class RetailCloudLakehouseLabsContext(CloudLakehouseLabsContext):
-  def __init__(self):
-    super().__init__('retail')
+  def __init__(self, useCatalog: str):
+    super().__init__('retail', useCatalog)
     self.__databaseForDLT = self.schema() + "_dlt"
     self.__rawDataDirectory = "/cloud_lakehouse_labs/retail/raw"
     self.__rawDataVolume = self.workingVolumeDirectory()
@@ -31,7 +35,9 @@ class RetailCloudLakehouseLabsContext(CloudLakehouseLabsContext):
 
 # COMMAND ----------
 
-labContext = RetailCloudLakehouseLabsContext()
+useCatalog = dbutils.widgets.get("CATALOG")
+
+labContext = RetailCloudLakehouseLabsContext(useCatalog)
 catalogName = labContext.catalogName()
 databaseName = labContext.databaseName()
 userName = labContext.userNameId()
