@@ -116,7 +116,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ./includes/SetupLab
+# MAGIC %run ./includes/SetupLab $CATALOG="main"
 
 # COMMAND ----------
 

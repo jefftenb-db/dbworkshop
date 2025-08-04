@@ -1,14 +1,13 @@
 # Databricks notebook source
-# MAGIC %pip install Faker
+# MAGIC %pip install --quiet Faker
 
 # COMMAND ----------
 
-# MAGIC %run ./SetupLab
+# MAGIC %run ./SetupLab $CATALOG="main"
 
 # COMMAND ----------
 
 # DBTITLE 1,Data Generation
-from pyspark.sql import functions as F
 from faker import Faker
 from collections import OrderedDict 
 import uuid
@@ -17,7 +16,8 @@ from datetime import datetime, timedelta
 import re
 import numpy as np
 import matplotlib.pyplot as plt
-from pyspark.sql.functions import col
+from pyspark.sql import functions as F
+from pyspark.sql.functions import col, to_timestamp
 
 def cleanup_folder(path):
   for f in dbutils.fs.ls(path):
@@ -57,92 +57,97 @@ def get_df(size, month):
 
 
 def generateRawData():
-    df_customers = get_df(133, 12*30).withColumn("creation_date", fake_date_old())
-    for i in range(1, 24):
-        df_customers = df_customers.union(get_df(2000+i*200, 24-i))
+  df_customers1 = get_df(133, 12*30).withColumn("creation_date", fake_date_old())
+  for i in range(1, 24):
+      df_customers1 = df_customers1.union(get_df(2000+i*200, 24-i))
 
-    df_customers = df_customers.cache()
+  df_customers1.write.format("json").option("header", True).mode("overwrite").save(rawDataVolume+"/customers")
+  df_customers = spark.read.format("json").load(rawDataVolume+"/customers")
+  df_customers = df_customers.withColumn("creation_date", to_timestamp(col("creation_date"), "MM-dd-yyyy HH:mm:ss"))
+  df_customers = df_customers.withColumn("last_activity_date", to_timestamp(col("last_activity_date"), "MM-dd-yyyy HH:mm:ss"))
+  cleanup_folder(rawDataVolume+"/customers")
 
-    ids = df_customers.select("id").collect()
-    ids = [r["id"] for r in ids]
+  ids = df_customers.select("id").collect()
+  ids = [r["id"] for r in ids]
 
-    #Number of order per customer to generate a nicely distributed dataset
-    np.random.seed(0)
-    mu, sigma = 3, 2 # mean and standard deviation
-    s = np.random.normal(mu, sigma, int(len(ids)))
-    s = [i if i > 0 else 0 for i in s]
+  #Number of order per customer to generate a nicely distributed dataset
+  np.random.seed(0)
+  mu, sigma = 3, 2 # mean and standard deviation
+  s = np.random.normal(mu, sigma, int(len(ids)))
+  s = [i if i > 0 else 0 for i in s]
 
-    #Most of our customers have ~3 orders
-    count, bins, ignored = plt.hist(s, 30, density=False)
-    plt.show()
-    s = [int(i) for i in s]
+  #Most of our customers have ~3 orders
+  count, bins, ignored = plt.hist(s, 30, density=False)
+  plt.show()
+  s = [int(i) for i in s]
 
-    order_user_ids = list()
-    action_user_ids = list()
-    for i, id in enumerate(ids):
-        for j in range(1, s[i]):
-            order_user_ids.append(id)
-            #Let's make 5 more actions per order (5 click on the website to buy something)
-            for j in range(1, 5):
-                action_user_ids.append(id)
-        
-    print(f"Generated {len(order_user_ids)} orders and  {len(action_user_ids)} actions for {len(ids)} users")
+  order_user_ids = list()
+  action_user_ids = list()
+  for i, id in enumerate(ids):
+      for j in range(1, s[i]):
+          order_user_ids.append(id)
+          #Let's make 5 more actions per order (5 click on the website to buy something)
+          for j in range(1, 5):
+              action_user_ids.append(id)
+      
+  print(f"Generated {len(order_user_ids)} orders and  {len(action_user_ids)} actions for {len(ids)} users")
 
-    # ORDERS DATA
-    orders = spark.createDataFrame([(i,) for i in order_user_ids], ['user_id'])
-    orders = orders.withColumn("id", fake_id())
-    orders = orders.withColumn("transaction_date", fake_date())
-    orders = orders.withColumn("item_count", F.round(F.rand()*2)+1)
-    orders = orders.withColumn("amount", F.col("item_count")*F.round(F.rand()*30+10))
-    orders = orders.cache()
-    orders.repartition(10).write.format("json").mode("overwrite").save(rawDataVolume+"/orders")
-    cleanup_folder(rawDataVolume+"/orders")
+  # ORDERS DATA
+  orders = spark.createDataFrame([(i,) for i in order_user_ids], ['user_id'])
+  orders = orders.withColumn("id", fake_id())
+  orders = orders.withColumn("transaction_date", fake_date())
+  orders = orders.withColumn("item_count", F.round(F.rand()*2)+1)
+  orders = orders.withColumn("amount", F.col("item_count")*F.round(F.rand()*30+10))
+  orders.repartition(10).write.format("json").mode("overwrite").save(rawDataVolume+"/orders")
+  orders = spark.read.format("json").load(rawDataVolume+"/orders")
+  orders = orders.withColumn("transaction_date", to_timestamp(col("transaction_date"), "MM-dd-yyyy HH:mm:ss"))
+  cleanup_folder(rawDataVolume+"/orders")
 
-    # WEBSITE ACTIONS DATA
-    platform = OrderedDict([("ios", 0.5),("android", 0.1),("other", 0.3),(None, 0.01)])
-    fake_platform = F.udf(lambda:fake.random_elements(elements=platform, length=1)[0])
+  # WEBSITE ACTIONS DATA
+  platform = OrderedDict([("ios", 0.5),("android", 0.1),("other", 0.3),(None, 0.01)])
+  fake_platform = F.udf(lambda:fake.random_elements(elements=platform, length=1)[0])
 
-    action_type = OrderedDict([("view", 0.5),("log", 0.1),("click", 0.3),(None, 0.01)])
-    fake_action = F.udf(lambda:fake.random_elements(elements=action_type, length=1)[0])
-    fake_uri = F.udf(lambda:re.sub(r'https?:\/\/.*?\/', "https://databricks.com/", fake.uri()))
+  action_type = OrderedDict([("view", 0.5),("log", 0.1),("click", 0.3),(None, 0.01)])
+  fake_action = F.udf(lambda:fake.random_elements(elements=action_type, length=1)[0])
+  fake_uri = F.udf(lambda:re.sub(r'https?:\/\/.*?\/', "https://databricks.com/", fake.uri()))
 
-    actions = spark.createDataFrame([(i,) for i in order_user_ids], ['user_id']).repartition(20)
-    actions = actions.withColumn("event_id", fake_id())
-    actions = actions.withColumn("platform", fake_platform())
-    actions = actions.withColumn("date", fake_date())
-    actions = actions.withColumn("action", fake_action())
-    actions = actions.withColumn("session_id", fake_id())
-    actions = actions.withColumn("url", fake_uri())
-    actions = actions.cache()
-    actions.write.format("csv").option("header", True).mode("overwrite").save(rawDataVolume+"/events")
-    cleanup_folder(rawDataVolume+"/events")
+  actions = spark.createDataFrame([(i,) for i in order_user_ids], ['user_id']).repartition(20)
+  actions = actions.withColumn("event_id", fake_id())
+  actions = actions.withColumn("platform", fake_platform())
+  actions = actions.withColumn("date", fake_date())
+  actions = actions.withColumn("action", fake_action())
+  actions = actions.withColumn("session_id", fake_id())
+  actions = actions.withColumn("url", fake_uri())
+  actions.write.format("csv").option("header", True).mode("overwrite").save(rawDataVolume+"/events")
+  actions = spark.read.format("csv").option("header", True).load(rawDataVolume+"/events")
+  actions = actions.withColumn("date", to_timestamp(col("date"), "MM-dd-yyyy HH:mm:ss"))
+  cleanup_folder(rawDataVolume+"/events")
 
-    # CHURN COMPUTATION AND USER GENERATION
+  # CHURN COMPUTATION AND USER GENERATION
+  #Let's generate the Churn information. We'll fake it based on the existing data & let our ML model learn it
+  churn_proba_action = actions.groupBy('user_id').agg({'platform': 'first', '*': 'count'}).withColumnRenamed("count(1)", "action_count")
 
-    #Let's generate the Churn information. We'll fake it based on the existing data & let our ML model learn it
-    churn_proba_action = actions.groupBy('user_id').agg({'platform': 'first', '*': 'count'}).withColumnRenamed("count(1)", "action_count")
-    #Let's count how many order we have per customer.
-    churn_proba = orders.groupBy('user_id').agg({'item_count': 'sum', '*': 'count'})
-    churn_proba = churn_proba.join(churn_proba_action, ['user_id'])
-    churn_proba = churn_proba.join(df_customers, churn_proba.user_id == df_customers.id)
+  #Let's count how many order we have per customer.
+  churn_proba = orders.groupBy('user_id').agg({'item_count': 'sum', '*': 'count'})
+  churn_proba = churn_proba.join(churn_proba_action, ['user_id'])
+  churn_proba = churn_proba.join(df_customers, churn_proba.user_id == df_customers.id)
 
-    #Customer having > 5 orders are likely to churn
+  #Customer having > 5 orders are likely to churn
+  churn_proba = (churn_proba.withColumn("churn_proba", 5 +  F.when(((col("count(1)") >=5) & (col("first(platform)") == "ios")) |
+                                                                  ((col("count(1)") ==3) & (col("gender") == 0)) |
+                                                                  ((col("count(1)") ==2) & (col("gender") == 1) & (col("age_group") <= 3)) |
+                                                                  ((col("sum(item_count)") <=1) & (col("first(platform)") == "android")) |
+                                                                  ((col("sum(item_count)") >=10) & (col("first(platform)") == "ios")) |
+                                                                  (col("action_count") >=4) |
+                                                                  (col("country") == "USA") |
+                                                                  ((F.datediff(F.current_timestamp(), col("creation_date")) >= 90)) |
+                                                                  ((col("age_group") >= 7) & (col("gender") == 0)) |
+                                                                  ((col("age_group") <= 2) & (col("gender") == 1)), 80).otherwise(20)))
 
-    churn_proba = (churn_proba.withColumn("churn_proba", 5 +  F.when(((col("count(1)") >=5) & (col("first(platform)") == "ios")) |
-                                                                    ((col("count(1)") ==3) & (col("gender") == 0)) |
-                                                                    ((col("count(1)") ==2) & (col("gender") == 1) & (col("age_group") <= 3)) |
-                                                                    ((col("sum(item_count)") <=1) & (col("first(platform)") == "android")) |
-                                                                    ((col("sum(item_count)") >=10) & (col("first(platform)") == "ios")) |
-                                                                    (col("action_count") >=4) |
-                                                                    (col("country") == "USA") |
-                                                                    ((F.datediff(F.current_timestamp(), col("creation_date")) >= 90)) |
-                                                                    ((col("age_group") >= 7) & (col("gender") == 0)) |
-                                                                    ((col("age_group") <= 2) & (col("gender") == 1)), 80).otherwise(20)))
-
-    churn_proba = churn_proba.withColumn("churn", F.rand()*100 < col("churn_proba"))
-    churn_proba = churn_proba.drop("user_id", "churn_proba", "sum(item_count)", "count(1)", "first(platform)", "action_count")
-    churn_proba.repartition(100).write.format("json").mode("overwrite").save(rawDataVolume+"/users")
-    cleanup_folder(rawDataVolume+"/users")
+  churn_proba = churn_proba.withColumn("churn", F.rand()*100 < col("churn_proba"))
+  churn_proba = churn_proba.drop("user_id", "churn_proba", "sum(item_count)", "count(1)", "first(platform)", "action_count")
+  churn_proba.repartition(100).write.format("json").mode("overwrite").save(rawDataVolume+"/users")
+  cleanup_folder(rawDataVolume+"/users")
 
 # COMMAND ----------
 

@@ -81,8 +81,8 @@ def churn_users():
           .read_stream("churn_users_bronze")
           .select(F.col("id").alias("user_id"),
                   F.sha1(F.col("email")).alias("email"), 
-                  F.to_timestamp(F.col("creation_date"), "MM-dd-yyyy HH:mm:ss").alias("creation_date"), 
-                  F.to_timestamp(F.col("last_activity_date"), "MM-dd-yyyy HH:mm:ss").alias("last_activity_date"), 
+                  F.to_timestamp(F.col("creation_date")).alias("creation_date"), 
+                  F.to_timestamp(F.col("last_activity_date")).alias("last_activity_date"), 
                   F.initcap(F.col("firstname")).alias("firstname"), 
                   F.initcap(F.col("lastname")).alias("lastname"), 
                   F.col("address"), 

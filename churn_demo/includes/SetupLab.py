@@ -1,11 +1,15 @@
 # Databricks notebook source
+dbutils.widgets.text("CATALOG", "main")
+
+# COMMAND ----------
+
 # MAGIC %run ../../includes/CloudLakehouseLabsContext
 
 # COMMAND ----------
 
 class RetailCloudLakehouseLabsContext(CloudLakehouseLabsContext):
-  def __init__(self):
-    super().__init__('retail')
+  def __init__(self, useCatalog: str):
+    super().__init__('retail', useCatalog)
     self.__databaseForDLT = self.schema() + "_dlt"
     self.__rawDataDirectory = "/cloud_lakehouse_labs/retail/raw"
     self.__rawDataVolume = self.workingVolumeDirectory()
@@ -19,7 +23,7 @@ class RetailCloudLakehouseLabsContext(CloudLakehouseLabsContext):
     except Exception as e:
       pass
 
-
+  def catalogName(self): return self.catalog()
   def databaseForDLT(self): return self.__databaseForDLT
   def databaseName(self): return self.schema()
   def userNameId(self): return self.userId()
@@ -31,7 +35,10 @@ class RetailCloudLakehouseLabsContext(CloudLakehouseLabsContext):
 
 # COMMAND ----------
 
-labContext = RetailCloudLakehouseLabsContext()
+useCatalog = dbutils.widgets.get("CATALOG")
+
+labContext = RetailCloudLakehouseLabsContext(useCatalog)
+catalogName = labContext.catalogName()
 databaseName = labContext.databaseName()
 userName = labContext.userNameId()
 databaseForDLT = labContext.databaseForDLT()
@@ -40,3 +47,5 @@ rawDataVolume = labContext.rawDataVolume()
 deltaTablesDirectory = labContext.deltaTablesDirectory()
 dltPipelinesOutputDataDirectory = labContext.dltPipelinesOutputDataDirectory()
 modelName = labContext.modelNameForUser()
+workingDir = labContext.workingDirectory()
+workingVolDir = labContext.workingVolumeDirectory()
