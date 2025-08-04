@@ -3,7 +3,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ./SetupLab
+# MAGIC %run ./SetupLab $CATALOG="main"
 
 # COMMAND ----------
 

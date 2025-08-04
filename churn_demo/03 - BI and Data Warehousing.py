@@ -74,6 +74,15 @@
 
 # COMMAND ----------
 
+# MAGIC %run ./includes/SetupLab $CATALOG="main"
+
+# COMMAND ----------
+
+print("Catalog name:  " + catalogName)
+print("Database name: " + databaseName)
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ### Lab exercise
 # MAGIC
