@@ -341,7 +341,7 @@ mlflow.set_registry_uri("databricks-uc")
 logged_model = 'runs:/' + run.info.run_id + '/model'
 
 print("Registeting the model under the name '" + modelName + "'")
-result=mlflow.register_model(logged_model, 'main.'+databaseName+'.'+modelName, await_registration_for=0)
+result=mlflow.register_model(logged_model, catalogName + '.' + databaseName + '.' + modelName, await_registration_for=0)
 
 # COMMAND ----------
 
@@ -352,12 +352,12 @@ import time
 client = MlflowClient()
 model_version_details = None
 while True:
-  model_version_details = client.get_model_version(name='main.'+databaseName+'.'+modelName, version=result.version)
+  model_version_details = client.get_model_version(name=catalogName + '.'+databaseName+'.'+modelName, version=result.version)
   if model_version_details.status == 'READY': break
   time.sleep(5)
 
 # create "production" alias for version 1 of model "prod.ml_team.iris_model"
-client.set_registered_model_alias('main.'+databaseName+'.'+modelName, "production", 1)
+client.set_registered_model_alias(catalogName + '.'+databaseName+'.'+modelName, "production", 1)
 
 # COMMAND ----------
 
