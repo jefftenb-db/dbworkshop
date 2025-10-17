@@ -217,9 +217,3 @@ print("Database name: " + databaseName)
 # MAGIC ### Materialized views
 # MAGIC
 # MAGIC Avoid expensive queries and materialize your tables. The engine will recompute only what's required when your data get updated. 
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### Next up
-# MAGIC [Orchestrating and automating with Workflows]($./04 - Orchestrating with Workflows)
