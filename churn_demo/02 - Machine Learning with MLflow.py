@@ -70,8 +70,6 @@
 # MAGIC Let's see how we can now leverage the C360 data to build a model predicting and explaining customer Churn.
 # MAGIC
 # MAGIC <img src="https://github.com/databricks-demos/dbdemos-resources/raw/main/images/retail/lakehouse-churn/lakehouse-retail-churn-ds-flow.png" width="1000px">
-# MAGIC
-# MAGIC *Note: Make sure you switched to the "Machine Learning" persona on the top left menu.*
 
 # COMMAND ----------
 
@@ -167,9 +165,6 @@ unique_dataset = churn_dataset.drop_duplicates(['user_id'])
 # fs.write_table(df=unique_dataset, name='churn_user_features', mode='overwrite')
 fs.write_table(df=unique_dataset, name='churn_user_features', mode='merge')
 
-features = fs.read_table(name='churn_user_features')
-display(features)
-
 # COMMAND ----------
 
 # MAGIC %md
@@ -179,8 +174,13 @@ display(features)
 
 # COMMAND ----------
 
+features = mlflow.data.load_delta(table_name='churn_user_features')
+
+#features = fs.read_table(name='churn_user_features')
+display(features)
+
 # Convert to Pandas
-df = features.toPandas()
+df = features.df.toPandas()
 
 # COMMAND ----------
 
@@ -290,6 +290,9 @@ with mlflow.start_run(run_name="simple-RF-run") as run:
 
   model.fit(X_train, y_train)
 
+  # Log the training dataset to capture lineage
+  mlflow.log_input(features, "training")
+
   # Log metrics for the test set
   mlflow_model = Model()
   pyfunc.add_to_model(mlflow_model, loader_module="mlflow.sklearn")
@@ -357,7 +360,7 @@ while True:
   time.sleep(5)
 
 # create "production" alias for version 1 of model "prod.ml_team.iris_model"
-client.set_registered_model_alias(catalogName + '.'+databaseName+'.'+modelName, "production", 1)
+client.set_registered_model_alias(catalogName + '.'+databaseName+'.'+modelName, "production", 2)
 
 # COMMAND ----------
 
