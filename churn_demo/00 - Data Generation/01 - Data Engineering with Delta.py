@@ -44,7 +44,25 @@
 
 # COMMAND ----------
 
-# MAGIC %run ./includes/SetupLab $CATALOG="main"
+# MAGIC %run ../includes/SetupLab $CATALOG="main"
+
+# COMMAND ----------
+
+# Let's view where we'll be storing our data
+print("Catalog name: " + catalogName)
+print("Database name: " + databaseName)
+print("User name: " + userName)
+
+# COMMAND ----------
+
+# Let's set the catalog and database name
+spark.sql("use catalog main")
+spark.sql("use database "+databaseName)
+
+# COMMAND ----------
+
+# MAGIC %md-sandbox
+# MAGIC ### Review the raw data received as JSON
 
 # COMMAND ----------
 
@@ -57,11 +75,6 @@ for fileInfo in dbutils.fs.ls(userRawDataVolume): print(fileInfo.name)
 # COMMAND ----------
 
 display(dbutils.fs.ls(rawDataVolume+"/orders"))
-
-# COMMAND ----------
-
-# MAGIC %md-sandbox
-# MAGIC ### Review the raw data received as JSON
 
 # COMMAND ----------
 
@@ -79,17 +92,6 @@ display(spark.sql("SELECT * FROM json.`"+rawDataVolume+"/users/`"))
 # MAGIC
 # MAGIC Let's use it to ingest the raw JSON & CSV data being delivered in our blob storage
 # MAGIC into the *bronze* tables
-
-# COMMAND ----------
-
-print("Catalog name: " + catalogName)
-print("Database name: " + databaseName)
-print("User name: " + userName)
-
-# COMMAND ----------
-
-spark.sql("use catalog main")
-spark.sql("use database "+databaseName)
 
 # COMMAND ----------
 

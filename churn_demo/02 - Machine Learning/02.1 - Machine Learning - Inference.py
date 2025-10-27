@@ -47,7 +47,7 @@
 # COMMAND ----------
 
 # DBTITLE 1,Run setup
-# MAGIC %run ./includes/SetupLab $CATALOG="main"
+# MAGIC %run ../includes/SetupLab $CATALOG="main"
 
 # COMMAND ----------
 
@@ -79,7 +79,7 @@ requirements_path = ModelsArtifactRepository(f"models:/{catalogName}.{databaseNa
 # COMMAND ----------
 
 # DBTITLE 1,Re-setup (previous command cleared everything)
-# MAGIC %run ./includes/SetupLab
+# MAGIC %run ../includes/SetupLab
 
 # COMMAND ----------
 

@@ -49,7 +49,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ./includes/CreateRawData
+# MAGIC %run ../includes/CreateRawData
 
 # COMMAND ----------
 

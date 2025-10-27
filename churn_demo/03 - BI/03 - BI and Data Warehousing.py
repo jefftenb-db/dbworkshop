@@ -74,7 +74,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ./includes/SetupLab $CATALOG="main"
+# MAGIC %run ../includes/SetupLab $CATALOG="main"
 
 # COMMAND ----------
 

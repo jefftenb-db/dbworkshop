@@ -21,7 +21,7 @@ class CloudLakehouseLabsContext:
 
     # Create the working schema
     catalogName = self.__catalog
-    databaseName = self.__user_id + '_' + self.__useCase
+    databaseName = self.__user_id # + '_' + self.__useCase
     volumeName = self.__volumeName
     try:
       spark.sql("create database if not exists " + catalogName + "." + databaseName)

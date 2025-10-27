@@ -79,7 +79,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ./includes/SetupLab $CATALOG="main"
+# MAGIC %run ../includes/SetupLab $CATALOG="main"
 
 # COMMAND ----------
 
@@ -173,6 +173,8 @@ fs.write_table(df=unique_dataset, name='churn_user_features', mode='merge')
 # MAGIC As we will be using a scikit-learn algorith, we will convert the feature table into a pandas model
 
 # COMMAND ----------
+
+import mlflow
 
 features = mlflow.data.load_delta(table_name='churn_user_features')
 
@@ -360,7 +362,7 @@ while True:
   time.sleep(5)
 
 # create "production" alias for version 1 of model "prod.ml_team.iris_model"
-client.set_registered_model_alias(catalogName + '.'+databaseName+'.'+modelName, "production", 2)
+client.set_registered_model_alias(catalogName + '.'+databaseName+'.'+modelName, "production", 1)
 
 # COMMAND ----------
 
